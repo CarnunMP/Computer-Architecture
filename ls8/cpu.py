@@ -11,6 +11,12 @@ class CPU:
         self.reg = [0] * 8
         self.pc = 0
 
+    def ram_read(self, decimal_address):
+        return self.ram[decimal_address]
+
+    def ram_write(self, value, decimal_address):
+        self.ram[decimal_address] = value
+
     def load(self):
         """Load a program into memory."""
 
@@ -32,11 +38,6 @@ class CPU:
             self.ram[address] = instruction
             address += 1
 
-    def ram_read(self, address):
-        return self.ram[address]
-
-    def ram_write(self, value, address):
-        self.ram[address] = value
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -69,4 +70,26 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        ops = {
+            'HLT': 0b00000001,
+            'LDI': 0b10000010,
+            'PRN': 0b01000111
+        }
+
+        while True:
+            IR = self.ram[self.pc] # Instruction Register
+
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
+
+            if IR == ops['HLT']:
+                exit()
+
+            elif IR == ops['LDI']:
+                self.reg[operand_a] = operand_b
+                self.pc += 3
+
+            elif IR == ops['PRN']:
+                print(self.reg[operand_a])
+                self.pc += 2
+
