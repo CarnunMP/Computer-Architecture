@@ -17,22 +17,28 @@ class CPU:
     def ram_write(self, value, decimal_address):
         self.ram[decimal_address] = value
 
-    def load(self):
+    def load(self, relative_file_path):
         """Load a program into memory."""
 
         address = 0
 
         # For now, we've just hardcoded a program:
+        # program = [
+        #     # From print8.ls8
+        #     0b10000010, # LDI R0,8
+        #     0b00000000,
+        #     0b00001000,
+        #     0b01000111, # PRN R0
+        #     0b00000000,
+        #     0b00000001, # HLT
+        # ]
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+        program = []
+        
+        with open(relative_file_path) as f:
+            for line in f:
+                if line[0] == "0" or line[0] == "1":
+                    program.append(int(line[:8], 2))
 
         for instruction in program:
             self.ram[address] = instruction
