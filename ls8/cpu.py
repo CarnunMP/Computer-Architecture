@@ -20,7 +20,7 @@ class CPU:
     def load(self, relative_file_path):
         """Load a program into memory."""
 
-        address = 0
+        address = self.pc
 
         # For now, we've just hardcoded a program:
         # program = [
@@ -50,7 +50,10 @@ class CPU:
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        #elif op == "SUB": etc
+        elif op == "SUB":
+            self.reg[reg_a] -= self.reg[reg_b]
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -79,7 +82,8 @@ class CPU:
         ops = {
             'HLT': 0b00000001,
             'LDI': 0b10000010,
-            'PRN': 0b01000111
+            'PRN': 0b01000111,
+            'MUL': 0b10100010
         }
 
         while True:
@@ -89,7 +93,8 @@ class CPU:
             operand_b = self.ram_read(self.pc + 2)
 
             if IR == ops['HLT']:
-                exit()
+                self.pc += 1
+                break
 
             elif IR == ops['LDI']:
                 self.reg[operand_a] = operand_b
@@ -98,4 +103,8 @@ class CPU:
             elif IR == ops['PRN']:
                 print(self.reg[operand_a])
                 self.pc += 2
+
+            elif IR == ops['MUL']:
+                self.alu('MUL', 0, 1)
+                self.pc += 3
 
