@@ -85,6 +85,27 @@ class CPU:
             'PRN': 0b01000111,
             'MUL': 0b10100010
         }
+        
+        # Note: While only some of the following functions need two args, all are defined with
+        #       two so that all can be called in the same way. See inside while loop below.
+        def HLT(operand_a, operand_b):
+            sys.exit(0)
+
+        def LDI(operand_a, operand_b):
+            self.reg[operand_a] = operand_b
+
+        def PRN(operand_a, operand_b):
+            print(self.reg[operand_a])
+
+        def MUL(operand_a, operand_b):
+            self.alu('MUL', 0, 1)
+
+        branchtable = {
+            ops['HLT']: HLT,
+            ops['LDI']: LDI,
+            ops['PRN']: PRN,
+            ops['MUL']: MUL
+        }
 
         while True:
             IR = self.ram[self.pc] # Instruction Register
@@ -92,17 +113,7 @@ class CPU:
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
 
-            if IR == ops['HLT']:
-                break
-
-            elif IR == ops['LDI']:
-                self.reg[operand_a] = operand_b
-
-            elif IR == ops['PRN']:
-                print(self.reg[operand_a])
-
-            elif IR == ops['MUL']:
-                self.alu('MUL', 0, 1)
+            branchtable[IR](operand_a, operand_b)
 
             self.pc += (1 + (IR >> 6)) # ensures pc is incremented appropriately
 
