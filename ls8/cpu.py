@@ -10,7 +10,9 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
-        self.stack_pointer = 0xF4 # F4 is ram address of 'Key Pressed'; stack ranges from F3 _downward_
+
+        # stack pointer:
+        self.reg[7] = 0xF4 # F4 is ram address of 'Key Pressed'; stack ranges from F3 _downward_
 
     def ram_read(self, decimal_address):
         return self.ram[decimal_address]
@@ -82,6 +84,8 @@ class CPU:
         """Run the CPU."""
         ops = {
             # ALU ops
+            'ADD': 0b10100000,
+            'SUB': 0b10100001,
             'MUL': 0b10100010,
 
             # PC mutators
@@ -97,16 +101,25 @@ class CPU:
         }
         
         # ALU ops
+        def ADD():
+            self.alu('ADD', 0, 1)
+
+        def SUB():
+            self.alu('SUB', 0, 1)
+
         def MUL():
             self.alu('MUL', 0, 1)
 
 
         # PC mutators
         def CALL(operand_a):
-            pass
+            self.reg[6] = self.pc + 2 # Interrupt Status; +2 because CALL takes one operand
+            PUSH(6)
+            self.pc = self.reg[operand_a]
 
         def RET():
-            pass
+            POP(0)
+            self.pc = self.reg[0]
 
 
         # Other
@@ -117,12 +130,12 @@ class CPU:
             self.reg[operand_a] = operand_b
 
         def PUSH(operand_a): # here, operand_a is a reg address
-            self.stack_pointer -= 1
-            self.ram[self.stack_pointer] = self.reg[operand_a]
+            self.reg[7] -= 1
+            self.ram[self.reg[7]] = self.reg[operand_a]
 
         def POP(operand_a): # here too!
-            self.reg[operand_a] = self.ram[self.stack_pointer]
-            self.stack_pointer += 1
+            self.reg[operand_a] = self.ram[self.reg[7]]
+            self.reg[7] += 1
 
         def PRN(operand_a):
             print(self.reg[operand_a])
@@ -130,6 +143,8 @@ class CPU:
 
         branchtable = {
             # ALU ops
+            ops['ADD']: ADD,
+            ops['SUB']: SUB,
             ops['MUL']: MUL,
 
             # PC mutators
@@ -161,5 +176,7 @@ class CPU:
             elif number_of_operands == 2:
                 branchtable[IR](operand_a, operand_b)
 
-            self.pc += (number_of_operands + 1) # ensures pc is incremented appropriately
+            instruction_sets_the_pc = (IR >> 4) & 1 == 1
+            if not instruction_sets_the_pc:
+                self.pc += (number_of_operands + 1) # ensures pc is incremented appropriately
 
