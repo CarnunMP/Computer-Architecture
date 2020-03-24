@@ -85,20 +85,29 @@ class CPU:
             'MUL': 0b10100010,
 
             # PC mutators
+            'CALL': 0b01010000,
+            'RET': 0b00010001,
 
             # Other
             'HLT': 0b00000001,
             'LDI': 0b10000010,
-            'PRN': 0b01000111,
             'PUSH': 0b01000101,
-            'POP': 0b01000110
+            'POP': 0b01000110,
+            'PRN': 0b01000111,
         }
         
         # ALU ops
         def MUL():
             self.alu('MUL', 0, 1)
 
+
         # PC mutators
+        def CALL(operand_a):
+            pass
+
+        def RET():
+            pass
+
 
         # Other
         def HLT():
@@ -107,9 +116,6 @@ class CPU:
         def LDI(operand_a, operand_b):
             self.reg[operand_a] = operand_b
 
-        def PRN(operand_a):
-            print(self.reg[operand_a])
-                   
         def PUSH(operand_a): # here, operand_a is a reg address
             self.stack_pointer -= 1
             self.ram[self.stack_pointer] = self.reg[operand_a]
@@ -118,18 +124,24 @@ class CPU:
             self.reg[operand_a] = self.ram[self.stack_pointer]
             self.stack_pointer += 1
 
+        def PRN(operand_a):
+            print(self.reg[operand_a])
+
+
         branchtable = {
             # ALU ops
             ops['MUL']: MUL,
 
             # PC mutators
+            ops['CALL']: CALL,
+            ops['RET']: RET,
 
             # Other
             ops['HLT']: HLT,
             ops['LDI']: LDI,
-            ops['PRN']: PRN,
             ops['PUSH']: PUSH,
-            ops['POP']: POP
+            ops['POP']: POP,
+            ops['PRN']: PRN
         }
 
         
