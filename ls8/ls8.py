@@ -7,8 +7,5 @@ from cpu import *
 
 cpu = CPU()
 
-cpu.load('ls8/examples/print8.ls8')
-cpu.run()
-
-cpu.load('ls8/examples/mult.ls8')
+cpu.load(f'{sys.argv[1]}')
 cpu.run()
