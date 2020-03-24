@@ -93,18 +93,16 @@ class CPU:
             operand_b = self.ram_read(self.pc + 2)
 
             if IR == ops['HLT']:
-                self.pc += 1
                 break
 
             elif IR == ops['LDI']:
                 self.reg[operand_a] = operand_b
-                self.pc += 3
 
             elif IR == ops['PRN']:
                 print(self.reg[operand_a])
-                self.pc += 2
 
             elif IR == ops['MUL']:
                 self.alu('MUL', 0, 1)
-                self.pc += 3
+
+            self.pc += (1 + (IR >> 6)) # ensures pc is incremented appropriately
 
