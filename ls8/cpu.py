@@ -101,14 +101,14 @@ class CPU:
         }
         
         # ALU ops
-        def ADD():
-            self.alu('ADD', 0, 1)
+        def ADD(reg_a, reg_b):
+            self.alu('ADD', reg_a, reg_b)
 
-        def SUB():
-            self.alu('SUB', 0, 1)
+        def SUB(reg_a, reg_b):
+            self.alu('SUB', reg_a, reg_b)
 
-        def MUL():
-            self.alu('MUL', 0, 1)
+        def MUL(reg_a, reg_b):
+            self.alu('MUL', reg_a, reg_b)
 
 
         # PC mutators
@@ -169,7 +169,7 @@ class CPU:
 
             number_of_operands = IR >> 6
 
-            if number_of_operands == 0 or (IR >> 5) & 1 == 1: # ALU operation
+            if number_of_operands == 0:
                 branchtable[IR]()
             elif number_of_operands == 1:
                 branchtable[IR](operand_a)
