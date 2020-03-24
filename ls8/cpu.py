@@ -10,6 +10,7 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
+        self.stack_pointer = 0xF4 # F4 is ram address of 'Key Pressed'; stack ranges from F3 _downward_
 
     def ram_read(self, decimal_address):
         return self.ram[decimal_address]
@@ -80,32 +81,58 @@ class CPU:
     def run(self):
         """Run the CPU."""
         ops = {
+            # ALU ops
+            'MUL': 0b10100010,
+
+            # PC mutators
+
+            # Other
             'HLT': 0b00000001,
             'LDI': 0b10000010,
             'PRN': 0b01000111,
-            'MUL': 0b10100010
+            'PUSH': 0b01000101,
+            'POP': 0b01000110
         }
         
-        # Note: While only some of the following functions need two args, all are defined with
-        #       two so that all can be called in the same way. See inside while loop below.
-        def HLT(operand_a, operand_b):
+        # ALU ops
+        def MUL():
+            self.alu('MUL', 0, 1)
+
+        # PC mutators
+
+        # Other
+        def HLT():
             sys.exit(0)
 
         def LDI(operand_a, operand_b):
             self.reg[operand_a] = operand_b
 
-        def PRN(operand_a, operand_b):
+        def PRN(operand_a):
             print(self.reg[operand_a])
+                   
+        def PUSH(operand_a): # here, operand_a is a reg address
+            self.stack_pointer -= 1
+            self.ram[self.stack_pointer] = self.reg[operand_a]
 
-        def MUL(operand_a, operand_b):
-            self.alu('MUL', 0, 1)
+        def POP(operand_a): # here too!
+            self.reg[operand_a] = self.ram[self.stack_pointer]
+            self.stack_pointer += 1
 
         branchtable = {
+            # ALU ops
+            ops['MUL']: MUL,
+
+            # PC mutators
+
+            # Other
             ops['HLT']: HLT,
             ops['LDI']: LDI,
             ops['PRN']: PRN,
-            ops['MUL']: MUL
+            ops['PUSH']: PUSH,
+            ops['POP']: POP
         }
+
+        
 
         while True:
             IR = self.ram[self.pc] # Instruction Register
@@ -113,7 +140,14 @@ class CPU:
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
 
-            branchtable[IR](operand_a, operand_b)
+            number_of_operands = IR >> 6
 
-            self.pc += (1 + (IR >> 6)) # ensures pc is incremented appropriately
+            if number_of_operands == 0 or (IR >> 5) & 1 == 1: # ALU operation
+                branchtable[IR]()
+            elif number_of_operands == 1:
+                branchtable[IR](operand_a)
+            elif number_of_operands == 2:
+                branchtable[IR](operand_a, operand_b)
+
+            self.pc += (number_of_operands + 1) # ensures pc is incremented appropriately
 
