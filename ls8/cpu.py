@@ -134,8 +134,11 @@ class CPU:
             self.ram[self.reg[7]] = self.reg[operand_a]
 
         def POP(operand_a): # here too!
-            self.reg[operand_a] = self.ram[self.reg[7]]
-            self.reg[7] += 1
+            if self.reg[7] < 0xF4:
+                self.reg[operand_a] = self.ram[self.reg[7]]
+                self.reg[7] += 1
+            else:
+                print('WARNING: cannot POP an empty stack!')
 
         def PRN(operand_a):
             print(self.reg[operand_a])
