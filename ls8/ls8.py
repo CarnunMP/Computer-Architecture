@@ -7,5 +7,9 @@ from cpu import *
 
 cpu = CPU()
 
-cpu.load()
+if len(sys.argv) != 2:
+    print("error: cla should be of the form 'py ls8.py examples/<filename>'")
+    sys.exit(1)
+
+cpu.load(f'{sys.argv[1]}')
 cpu.run()
